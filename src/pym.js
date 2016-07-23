@@ -208,7 +208,7 @@
         * @method _constructIframe
         */
         this._srcdocIframe = function() {
-            
+
             this.iframe = this.el.getElementsByTagName('iframe')[0];
 
             // Set some attributes to this proto-iframe.
@@ -379,6 +379,12 @@
         for (var key in config) {
             this.settings[key] = config[key];
         }
+
+        this._sendHostInfo = function() {
+            this.sendMessage('config', JSON.stringify(this.settings.config));
+        };
+
+        this.onMessage('loaded', this._sendHostInfo);
 
         // Bind required message handlers
         this.onMessage('height', this._onHeightMessage);
@@ -594,13 +600,27 @@
             this.settings[key] = config[key];
         }
 
-        // Set up a listener to handle any incoming messages.
-        window.addEventListener('message', this._processMessage, false);
+        this._cacheHostInfo = function(config) {
+            this.config = JSON.parse(config);
+            if (this.settings.connectedCallback) {
+                this.settings.connectedCallback(this);
+            }
+        };
+
+        this.getHostInformation = function() {
+            return this.config;
+        };
+
+        this.onMessage('config', this._cacheHostInfo);
+        this.sendMessage('loaded', true);
 
         // If there's a callback function, call it.
         if (this.settings.renderCallback) {
             this.settings.renderCallback(width);
         }
+
+        // Set up a listener to handle any incoming messages.
+        window.addEventListener('message', this._processMessage, false);
 
         // Send the initial height to the parent.
         this.sendHeight();

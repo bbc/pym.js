@@ -1,5 +1,43 @@
 # Pym.js
 
+## BBC-specific modifications
+* We added the ability to init a pym Parent with a sourcedoc attribute rather than an iFrame URL.
+* We added a way of accessing host information:
+ 
+1. When creating pym Parent, pass a `config` property with whatever you like (e.g. host URL, cookies, etc)
+2. When creating pym Child, pass a `connectedCallback` function, which is invoked once a connection has been made with the pym Parent.
+3. Anything inside the callback can safely call pym Child.getHostInformation() - this provides a nice easy way for pym Childs to access host information.
+
+Example:
+
+```js
+var myConf = {
+    hostInformation: {
+        onBbcDomain: true,
+        category:    'news'
+    },
+    applicationHtml: coreContentContainer.innerHTML
+};
+var pymParent = new pym.Parent(iframeUid, iframeUrl, {config: myConf});
+```
+
+...and the child:
+
+```js
+new pym.Child({
+    polling: 100,
+    connectedCallback: function downloadApplication(self) {
+        console.log(self.getHostInformation().hostInformation);
+    }
+});
+```
+
+---
+
+The original README is below.
+
+---
+
 ## About
 
 Using iframes in a responsive page can be frustrating. It&rsquo;s easy enough to make an iframe&rsquo;s width span 100% of its container, but sizing its height is tricky &mdash; especially if the content of the iframe changes height depending on page width (for example, because of text wrapping or media queries) or events within the iframe.
