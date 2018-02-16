@@ -1,4 +1,4 @@
-/*! pym.js - v0.4.6 - 2016-05-18 */
+/*! pym.js - v0.4.6 - 2018-02-16 */
 /*
 * Pym.js is library that resizes an iframe based on the width of the parent and the resulting height of the child.
 * Check out the docs at http://blog.apps.npr.org/pym.js/ or the readme at README.md for usage.
@@ -53,6 +53,14 @@
 
         return true;
     };
+
+	var _isSafeUrl = function(url) {
+		// Adapted from angular 2 url sanitizer
+		var SAFE_URL_PATTERN = /^(?:(?:https?|mailto|ftp):|[^&:/?#]*(?:[/?#]|$))/gi;
+		if (!url.match(SAFE_URL_PATTERN)) { return; }
+
+		return true;
+	};
 
     /**
      * Construct a message to send between frames.
@@ -329,7 +337,8 @@
             /*
              * Handle parent scroll message from child.
              */
-             document.location.href = message;
+            if (!_isSafeUrl(message)) {return;}
+            document.location.href = message;
         };
 
         /**
